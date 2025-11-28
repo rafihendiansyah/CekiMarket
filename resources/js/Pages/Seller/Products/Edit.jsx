@@ -4,6 +4,7 @@ export default function EditProduct({ product }) {
     const { data, setData, post, processing, errors } = useForm({
         name: product.name || "",
         category: product.category || "",
+        condition: product.condition || "BARU", // <-- tambahin kondisi di state
         price: product.price || "",
         stock: product.stock || "",
         description: product.description || "",
@@ -60,6 +61,7 @@ export default function EditProduct({ product }) {
                         encType="multipart/form-data"
                         className="space-y-5"
                     >
+                        {/* Nama Produk */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700">
                                 Nama Produk*
@@ -79,6 +81,7 @@ export default function EditProduct({ product }) {
                             )}
                         </div>
 
+                        {/* Kategori */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700">
                                 Kategori*
@@ -98,6 +101,29 @@ export default function EditProduct({ product }) {
                             )}
                         </div>
 
+                        {/* Kondisi Produk */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">
+                                Kondisi Produk*
+                            </label>
+                            <select
+                                value={data.condition}
+                                onChange={(e) =>
+                                    setData("condition", e.target.value)
+                                }
+                                className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-[#335c67] focus:border-[#335c67]"
+                            >
+                                <option value="BARU">Baru</option>
+                                <option value="BEKAS">Bekas</option>
+                            </select>
+                            {errors.condition && (
+                                <p className="text-sm text-red-600 mt-1">
+                                    {errors.condition}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Harga & Stok */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">
@@ -138,6 +164,7 @@ export default function EditProduct({ product }) {
                             </div>
                         </div>
 
+                        {/* Deskripsi */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700">
                                 Deskripsi Produk
@@ -157,6 +184,7 @@ export default function EditProduct({ product }) {
                             )}
                         </div>
 
+                        {/* Foto Produk */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700">
                                 Foto Produk Baru (opsional, max 5)
@@ -193,6 +221,7 @@ export default function EditProduct({ product }) {
                             )}
                         </div>
 
+                        {/* Tombol Aksi */}
                         <div className="flex justify-end gap-3 pt-4 border-t">
                             <Link
                                 href={route("seller.products.index")}

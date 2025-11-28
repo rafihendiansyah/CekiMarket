@@ -6,6 +6,8 @@ export default function ProductShow({ product, store, reviews }) {
 
     const { data, setData, post, processing, errors, reset } = useForm({
         visitor_name: "",
+        visitor_phone: "",
+        visitor_email: "",
         rating: 5,
         comment: "",
     });
@@ -14,7 +16,13 @@ export default function ProductShow({ product, store, reviews }) {
         e.preventDefault();
         post(route("products.reviews.store", product.id), {
             onSuccess: () => {
-                reset("visitor_name", "rating", "comment");
+                reset(
+                    "visitor_name",
+                    "visitor_phone",
+                    "visitor_email",
+                    "rating",
+                    "comment"
+                );
             },
         });
     };
@@ -175,6 +183,15 @@ export default function ProductShow({ product, store, reviews }) {
                             <div className="text-2xl font-bold text-[#335c67] mb-3">
                                 {formatRupiah(product.price)}
                             </div>
+
+                            {/* Kondisi produk */}
+                            <div className="text-sm text-gray-700 mb-1">
+                                Kondisi:{" "}
+                                {product.condition === "BEKAS"
+                                    ? "Bekas"
+                                    : "Baru"}
+                            </div>
+
                             <div className="text-sm text-gray-700 mb-1">
                                 Stok: {product.stock}
                             </div>
@@ -237,6 +254,50 @@ export default function ProductShow({ product, store, reviews }) {
                                     {errors.visitor_name && (
                                         <p className="text-xs text-red-600 mt-1">
                                             {errors.visitor_name}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-700">
+                                        Nomor HP*
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={data.visitor_phone}
+                                        onChange={(e) =>
+                                            setData(
+                                                "visitor_phone",
+                                                e.target.value
+                                            )
+                                        }
+                                        className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-[#335c67] focus:border-[#335c67]"
+                                    />
+                                    {errors.visitor_phone && (
+                                        <p className="text-xs text-red-600 mt-1">
+                                            {errors.visitor_phone}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-700">
+                                        Email*
+                                    </label>
+                                    <input
+                                        type="email"
+                                        value={data.visitor_email}
+                                        onChange={(e) =>
+                                            setData(
+                                                "visitor_email",
+                                                e.target.value
+                                            )
+                                        }
+                                        className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-[#335c67] focus:border-[#335c67]"
+                                    />
+                                    {errors.visitor_email && (
+                                        <p className="text-xs text-red-600 mt-1">
+                                            {errors.visitor_email}
                                         </p>
                                     )}
                                 </div>

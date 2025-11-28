@@ -93,14 +93,16 @@ class SellerProductController extends Controller
         }
 
         $validated = $request->validate([
-            'name'        => ['required', 'string', 'max:255'],
-            'category'    => ['required', 'string', 'max:255'],
-            'price'       => ['required', 'integer', 'min:0'],
-            'stock'       => ['required', 'integer', 'min:0'],
-            'description' => ['nullable', 'string'],
-            'images'      => ['nullable', 'array', 'max:5'], // max 5 file
-            'images.*'    => ['file', 'image', 'mimes:jpg,jpeg,png', 'max:4096'], // 4MB
-        ]);
+    'name'        => ['required', 'string', 'max:255'],
+    'category'    => ['required', 'string', 'max:255'],
+    'condition'   => ['required', 'in:BARU,BEKAS'],
+    'price'       => ['required', 'integer', 'min:0'],
+    'stock'       => ['required', 'integer', 'min:0'],
+    'description' => ['nullable', 'string'],
+    'images'      => ['nullable', 'array', 'max:5'],
+    'images.*'    => ['file', 'image', 'mimes:jpg,jpeg,png', 'max:4096'],
+]);
+
 
         $imagePaths = [];
 
@@ -111,14 +113,16 @@ class SellerProductController extends Controller
         }
 
         $product = $seller->products()->create([
-            'name'        => $validated['name'],
-            'category'    => $validated['category'],
-            'price'       => $validated['price'],
-            'stock'       => $validated['stock'],
-            'description' => $validated['description'] ?? null,
-            'images'      => $imagePaths,
-            'status'      => 'ACTIVE',
-        ]);
+    'name'        => $validated['name'],
+    'category'    => $validated['category'],
+    'condition'   => $validated['condition'],
+    'price'       => $validated['price'],
+    'stock'       => $validated['stock'],
+    'description' => $validated['description'] ?? null,
+    'images'      => $imagePaths,
+    'status'      => 'ACTIVE',
+]);
+
 
         return redirect()
             ->route('seller.products.index')
@@ -140,17 +144,19 @@ class SellerProductController extends Controller
         }
 
         return Inertia::render('Seller/Products/Edit', [
-            'product' => [
-                'id'          => $product->id,
-                'name'        => $product->name,
-                'category'    => $product->category,
-                'price'       => $product->price,
-                'stock'       => $product->stock,
-                'description' => $product->description,
-                'images'      => $product->images ?? [],
-                'status'      => $product->status,
-            ],
-        ]);
+    'product' => [
+        'id'          => $product->id,
+        'name'        => $product->name,
+        'category'    => $product->category,
+        'condition'   => $product->condition,
+        'price'       => $product->price,
+        'stock'       => $product->stock,
+        'description' => $product->description,
+        'images'      => $product->images ?? [],
+        'status'      => $product->status,
+    ],
+]);
+
     }
 
     /**
@@ -188,13 +194,15 @@ class SellerProductController extends Controller
         }
 
         $product->update([
-            'name'        => $validated['name'],
-            'category'    => $validated['category'],
-            'price'       => $validated['price'],
-            'stock'       => $validated['stock'],
-            'description' => $validated['description'] ?? null,
-            'images'      => $imagePaths,
-        ]);
+    'name'        => $validated['name'],
+    'category'    => $validated['category'],
+    'condition'   => $validated['condition'],
+    'price'       => $validated['price'],
+    'stock'       => $validated['stock'],
+    'description' => $validated['description'] ?? null,
+    'images'      => $imagePaths,
+]);
+
 
         return redirect()
             ->route('seller.products.index')

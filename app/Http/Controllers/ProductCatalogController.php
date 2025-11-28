@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
-use Illuminate\Http\Request; // <-- penting
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -15,10 +15,11 @@ class ProductCatalogController extends Controller
     public function index(Request $request): Response
     {
         // Ambil parameter pencarian dari query string (?q=..., ?category=..., dll)
-        $q        = $request->query('q');
-        $category = $request->query('category');
-        $city     = $request->query('city');
-        $province = $request->query('province');
+        $q         = $request->query('q');
+        $category  = $request->query('category');
+        $city      = $request->query('city');
+        $province  = $request->query('province');
+        $condition = $request->query('condition'); // BARU / BEKAS
 
         // Query dasar: produk ACTIVE dari toko ACTIVE
         $query = Product::with('seller')
@@ -45,6 +46,11 @@ class ProductCatalogController extends Controller
             $query->where('category', $category);
         }
 
+        // 🔍 Filter kondisi barang (BARU / BEKAS)
+        if ($condition) {
+            $query->where('condition', $condition);
+        }
+
         // 🔍 Filter kota
         if ($city) {
             $query->whereHas('seller', function ($s) use ($city) {
@@ -68,6 +74,7 @@ class ProductCatalogController extends Controller
                 'id'            => $product->id,
                 'name'          => $product->name,
                 'category'      => $product->category,
+                'condition'     => $product->condition, // BARU / BEKAS
                 'price'         => $product->price,
                 'imageUrl'      => $firstImage,
                 'storeName'     => $product->seller?->storeName,
@@ -104,10 +111,11 @@ class ProductCatalogController extends Controller
         return Inertia::render('Dashboard', [
             'products'   => $products,
             'filters'    => [
-                'q'        => $q,
-                'category' => $category,
-                'city'     => $city,
-                'province' => $province,
+                'q'         => $q,
+                'category'  => $category,
+                'city'      => $city,
+                'province'  => $province,
+                'condition' => $condition,
             ],
             'categories' => $categories,
             'cities'     => $cities,
@@ -159,6 +167,7 @@ class ProductCatalogController extends Controller
                 'id'            => $product->id,
                 'name'          => $product->name,
                 'category'      => $product->category,
+                'condition'     => $product->condition, // ← tampilkan juga di detail
                 'price'         => $product->price,
                 'stock'         => $product->stock,
                 'description'   => $product->description,

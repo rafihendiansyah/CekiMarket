@@ -7,6 +7,7 @@ use App\Http\Controllers\PlatformAdminSellerController;
 use App\Http\Controllers\SellerProductController;
 use App\Http\Controllers\ProductCatalogController;
 use App\Http\Controllers\ProductReviewController;
+use App\Http\Controllers\Admin\AdminDashboardController; 
 use Inertia\Inertia;
 
 /*
@@ -33,6 +34,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Dashboard Platform Admin - SRS 07
+    Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])
+        ->name('admin.dashboard');
 
     // Form registrasi penjual (data toko - SRS 01)
     Route::get('/seller/register', [SellerRegistrationController::class, 'create'])

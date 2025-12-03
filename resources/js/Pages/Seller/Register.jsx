@@ -1,73 +1,274 @@
-import { Head, useForm, Link, usePage } from "@inertiajs/react";
+import { Head, Link, useForm, usePage } from "@inertiajs/react";
+import { useEffect, useState } from "react";
 
-export default function RegisterSeller({ user, existingSeller }) {
-    const { flash } = usePage().props;
+export default function SellerRegister() {
+    const { auth, errors: pageErrors, existingSeller } = usePage().props;
 
-    const initialData = {
-        storeName: existingSeller?.storeName || "",
-        storeDescription: existingSeller?.storeDescription || "",
-        picName: existingSeller?.picName || user?.name || "",
-        picPhone: existingSeller?.picPhone || "",
-        picEmail: existingSeller?.picEmail || user?.email || "",
-        picStreet: existingSeller?.picStreet || "",
-        picRT: existingSeller?.picRT || "",
-        picRW: existingSeller?.picRW || "",
-        picVillage: existingSeller?.picVillage || "",
-        picCity: existingSeller?.picCity || "",
-        picProvince: existingSeller?.picProvince || "",
-        picNumber: existingSeller?.picNumber || "",
-        picPhoto: null, // file baru (opsional)
-        picKtpFile: null, // file baru (opsional)
+    const { data, setData, post, processing, errors, reset } = useForm({
+        storeName: "",
+        storeDescription: "",
+        picName: "",
+        picPhone: "",
+        picEmail: auth?.user?.email || "",
+        picStreet: "",
+        picRT: "",
+        picRW: "",
+        picVillage: "",
+        picCity: "",
+        picProvince: "",
+        picNumber: "",
+        picPhoto: null,
+        picKtpPhoto: null,
+    });
+
+    // ====== PREFILL DATA DARI existingSeller ======
+    useEffect(() => {
+        if (!existingSeller) return;
+
+        setData((old) => ({
+            ...old,
+            storeName: existingSeller.storeName || "",
+            storeDescription: existingSeller.storeDescription || "",
+            picName: existingSeller.picName || "",
+            picPhone: existingSeller.picPhone || "",
+            picEmail:
+                existingSeller.picEmail || auth?.user?.email || old.picEmail,
+            picStreet: existingSeller.picStreet || "",
+            picRT: existingSeller.picRT || "",
+            picRW: existingSeller.picRW || "",
+            picVillage: existingSeller.picVillage || "",
+            picCity: existingSeller.picCity || "",
+            picProvince: existingSeller.picProvince || "",
+            picNumber: existingSeller.picNumber || "",
+        }));
+    }, [existingSeller, auth, setData]);
+
+    // ====== STATE UNTUK WILAYAH INDONESIA ======
+    const [provinces, setProvinces] = useState([]);
+    const [regencies, setRegencies] = useState([]);
+    const [districts, setDistricts] = useState([]);
+
+    const [selectedProvinceId, setSelectedProvinceId] = useState("");
+    const [selectedRegencyId, setSelectedRegencyId] = useState("");
+    const [selectedDistrictId, setSelectedDistrictId] = useState("");
+
+    const [loadingProvinces, setLoadingProvinces] = useState(false);
+    const [loadingRegencies, setLoadingRegencies] = useState(false);
+    const [loadingDistricts, setLoadingDistricts] = useState(false);
+    const [regionError, setRegionError] = useState("");
+
+    // Ambil daftar provinsi saat pertama kali load
+    useEffect(() => {
+        async function fetchProvinces() {
+            try {
+                setLoadingProvinces(true);
+                setRegionError("");
+                const res = await fetch(
+                    "https://www.emsifa.com/api-wilayah-indonesia/api/provinces.json"
+                );
+                const json = await res.json();
+                setProvinces(json);
+            } catch (e) {
+                console.error(e);
+                setRegionError(
+                    "Gagal memuat data provinsi. Pastikan koneksi internet tersedia."
+                );
+            } finally {
+                setLoadingProvinces(false);
+            }
+        }
+        fetchProvinces();
+    }, []);
+
+    // Helper: ambil regency by province (dipakai handler & prefill)
+    const fetchRegenciesByProvince = async (provinceId) => {
+        try {
+            setLoadingRegencies(true);
+            setRegionError("");
+            const res = await fetch(
+                `https://www.emsifa.com/api-wilayah-indonesia/api/regencies/${provinceId}.json`
+            );
+            const json = await res.json();
+            setRegencies(json);
+            return json;
+        } catch (e) {
+            console.error(e);
+            setRegionError(
+                "Gagal memuat data kabupaten/kota. Coba pilih provinsi lagi atau cek koneksi internet."
+            );
+            return [];
+        } finally {
+            setLoadingRegencies(false);
+        }
     };
 
-    const { data, setData, post, processing, errors } = useForm(initialData);
+    // Helper: ambil district by regency (dipakai handler & prefill)
+    const fetchDistrictsByRegency = async (regencyId) => {
+        try {
+            setLoadingDistricts(true);
+            setRegionError("");
+            const res = await fetch(
+                `https://www.emsifa.com/api-wilayah-indonesia/api/districts/${regencyId}.json`
+            );
+            const json = await res.json();
+            setDistricts(json);
+            return json;
+        } catch (e) {
+            console.error(e);
+            setRegionError(
+                "Gagal memuat data kecamatan. Coba pilih kab/kota lagi atau cek koneksi internet."
+            );
+            return [];
+        } finally {
+            setLoadingDistricts(false);
+        }
+    };
 
-    const submit = (e) => {
+    // Handler ketika provinsi berubah (dipilih user)
+    const handleProvinceChange = async (e) => {
+        const provinceId = e.target.value;
+        setSelectedProvinceId(provinceId);
+        setSelectedRegencyId("");
+        setSelectedDistrictId("");
+        setRegencies([]);
+        setDistricts([]);
+        setData("picCity", "");
+        setData("picVillage", "");
+
+        const province = provinces.find((p) => p.id === provinceId);
+        setData("picProvince", province ? province.name : "");
+
+        if (!provinceId) return;
+        await fetchRegenciesByProvince(provinceId);
+    };
+
+    // Handler ketika kab/kota berubah (dipilih user)
+    const handleRegencyChange = async (e) => {
+        const regencyId = e.target.value;
+        setSelectedRegencyId(regencyId);
+        setSelectedDistrictId("");
+        setDistricts([]);
+        setData("picVillage", "");
+
+        const regency = regencies.find((r) => r.id === regencyId);
+        setData("picCity", regency ? regency.name : "");
+
+        if (!regencyId) return;
+        await fetchDistrictsByRegency(regencyId);
+    };
+
+    // Handler ketika kecamatan dipilih
+    const handleDistrictChange = (e) => {
+        const districtId = e.target.value;
+        setSelectedDistrictId(districtId);
+        const district = districts.find((d) => d.id === districtId);
+        setData("picVillage", district ? district.name : "");
+    };
+
+    // 🔥 PREFILL DROPDOWN PROVINSI/KAB/KEC BERDASARKAN existingSeller
+    useEffect(() => {
+        // Butuh: data seller lama + daftar provinsi sudah ter-load + belum ada pilihan dropdown
+        if (
+            !existingSeller ||
+            provinces.length === 0 ||
+            selectedProvinceId ||
+            selectedRegencyId ||
+            selectedDistrictId
+        ) {
+            return;
+        }
+
+        (async () => {
+            // Cari province by name
+            const prov = provinces.find(
+                (p) => p.name === existingSeller.picProvince
+            );
+            if (!prov) return;
+
+            setSelectedProvinceId(prov.id);
+            setData("picProvince", prov.name);
+
+            // Ambil regencies dan pilih yang sesuai
+            const regList = await fetchRegenciesByProvince(prov.id);
+            const reg = regList.find((r) => r.name === existingSeller.picCity);
+            if (!reg) return;
+
+            setSelectedRegencyId(reg.id);
+            setData("picCity", reg.name);
+
+            // Ambil districts dan pilih yang sesuai
+            const distList = await fetchDistrictsByRegency(reg.id);
+            const dist = distList.find(
+                (d) => d.name === existingSeller.picVillage
+            );
+            if (!dist) return;
+
+            setSelectedDistrictId(dist.id);
+            setData("picVillage", dist.name);
+        })();
+    }, [
+        existingSeller,
+        provinces,
+        selectedProvinceId,
+        selectedRegencyId,
+        selectedDistrictId,
+        setData,
+    ]);
+
+    const handleSubmit = (e) => {
         e.preventDefault();
         post(route("seller.register.store"), {
-            forceFormData: true,
+            onSuccess: () => {
+                reset();
+                setSelectedProvinceId("");
+                setSelectedRegencyId("");
+                setSelectedDistrictId("");
+                setRegencies([]);
+                setDistricts([]);
+            },
         });
     };
 
     return (
         <>
-            <Head title="Registrasi Penjual" />
+            <Head title="Registrasi Penjual (Toko)" />
 
-            <div className="min-h-screen bg-gray-50 flex justify-center py-10">
-                <div className="w-full max-w-3xl bg-white shadow-md rounded-lg p-8">
-                    <div className="mb-6 border-b pb-4 flex items-center justify-between">
-                        <div>
-                            <h1 className="text-2xl font-bold text-[#335c67]">
-                                Formulir Registrasi Penjual (Toko)
-                            </h1>
-                            <p className="text-sm text-gray-600 mt-1">
-                                {existingSeller
-                                    ? "Anda dapat memperbarui data toko Anda di sini."
-                                    : "Lengkapi data berikut untuk mendaftarkan toko Anda."}
-                            </p>
-                        </div>
-                        <span className="text-xs text-gray-400">(* wajib)</span>
+            <div className="min-h-screen bg-gray-50 py-8">
+                <div className="max-w-3xl mx-auto bg-white rounded-lg shadow p-6">
+                    <div className="flex items-center justify-between mb-4">
+                        <h1 className="text-xl font-bold text-gray-800">
+                            Formulir Registrasi Penjual (Toko)
+                        </h1>
+                        <Link
+                            href={route("dashboard")}
+                            className="text-xs text-gray-500 hover:underline"
+                        >
+                            &larr; Kembali ke Beranda
+                        </Link>
                     </div>
 
-                    {flash?.success && (
-                        <div className="mb-4 rounded border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm text-emerald-800">
-                            {flash.success}
+                    {pageErrors && Object.keys(pageErrors).length > 0 && (
+                        <div className="mb-4 rounded border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                            Terdapat beberapa kesalahan input. Silakan periksa
+                            kembali formulir di bawah.
                         </div>
                     )}
 
-                    <form
-                        onSubmit={submit}
-                        encType="multipart/form-data"
-                        className="space-y-8"
-                    >
-                        {/* DATA TOKO */}
-                        <section>
-                            <h2 className="text-lg font-semibold text-gray-800 mb-3">
+                    {regionError && (
+                        <div className="mb-4 rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                            {regionError}
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        {/* Data Toko */}
+                        <div className="border-b pb-3">
+                            <h2 className="text-sm font-semibold text-gray-800 mb-2">
                                 Data Toko
                             </h2>
-                            <div className="grid md:grid-cols-2 gap-4">
+                            <div className="grid md:grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">
+                                    <label className="block text-xs font-medium text-gray-700">
                                         Nama Toko*
                                     </label>
                                     <input
@@ -79,18 +280,17 @@ export default function RegisterSeller({ user, existingSeller }) {
                                         className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-[#335c67] focus:border-[#335c67]"
                                     />
                                     {errors.storeName && (
-                                        <p className="text-sm text-red-600 mt-1">
+                                        <p className="text-[11px] text-red-600 mt-1">
                                             {errors.storeName}
                                         </p>
                                     )}
                                 </div>
-
-                                <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        Deskripsi Singkat
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-700">
+                                        Deskripsi Toko
                                     </label>
-                                    <textarea
-                                        rows="3"
+                                    <input
+                                        type="text"
                                         value={data.storeDescription}
                                         onChange={(e) =>
                                             setData(
@@ -99,25 +299,25 @@ export default function RegisterSeller({ user, existingSeller }) {
                                             )
                                         }
                                         className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-[#335c67] focus:border-[#335c67]"
-                                        placeholder="Contoh: Menjual buku kuliah, alat tulis, dan perlengkapan kampus."
+                                        placeholder="Contoh: Toko alat tulis, perlengkapan rumah tangga, dll."
                                     />
                                     {errors.storeDescription && (
-                                        <p className="text-sm text-red-600 mt-1">
+                                        <p className="text-[11px] text-red-600 mt-1">
                                             {errors.storeDescription}
                                         </p>
                                     )}
                                 </div>
                             </div>
-                        </section>
+                        </div>
 
-                        {/* DATA PIC */}
-                        <section>
-                            <h2 className="text-lg font-semibold text-gray-800 mb-3">
+                        {/* Data PIC */}
+                        <div className="border-b pb-3">
+                            <h2 className="text-sm font-semibold text-gray-800 mb-2">
                                 Data PIC (Penanggung Jawab)
                             </h2>
-                            <div className="grid md:grid-cols-2 gap-4">
+                            <div className="grid md:grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">
+                                    <label className="block text-xs font-medium text-gray-700">
                                         Nama PIC*
                                     </label>
                                     <input
@@ -129,15 +329,14 @@ export default function RegisterSeller({ user, existingSeller }) {
                                         className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-[#335c67] focus:border-[#335c67]"
                                     />
                                     {errors.picName && (
-                                        <p className="text-sm text-red-600 mt-1">
+                                        <p className="text-[11px] text-red-600 mt-1">
                                             {errors.picName}
                                         </p>
                                     )}
                                 </div>
-
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        No HP PIC*
+                                    <label className="block text-xs font-medium text-gray-700">
+                                        Nomor HP PIC*
                                     </label>
                                     <input
                                         type="text"
@@ -146,16 +345,16 @@ export default function RegisterSeller({ user, existingSeller }) {
                                             setData("picPhone", e.target.value)
                                         }
                                         className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-[#335c67] focus:border-[#335c67]"
+                                        placeholder="Contoh: 0812xxxxxxx"
                                     />
                                     {errors.picPhone && (
-                                        <p className="text-sm text-red-600 mt-1">
+                                        <p className="text-[11px] text-red-600 mt-1">
                                             {errors.picPhone}
                                         </p>
                                     )}
                                 </div>
-
-                                <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700">
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-700">
                                         Email PIC*
                                     </label>
                                     <input
@@ -167,151 +366,14 @@ export default function RegisterSeller({ user, existingSeller }) {
                                         className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-[#335c67] focus:border-[#335c67]"
                                     />
                                     {errors.picEmail && (
-                                        <p className="text-sm text-red-600 mt-1">
+                                        <p className="text-[11px] text-red-600 mt-1">
                                             {errors.picEmail}
                                         </p>
                                     )}
                                 </div>
-                            </div>
-                        </section>
-
-                        {/* ALAMAT PIC */}
-                        <section>
-                            <h2 className="text-lg font-semibold text-gray-800 mb-3">
-                                Alamat PIC
-                            </h2>
-                            <div className="grid md:grid-cols-2 gap-4">
-                                <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        Jalan*
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={data.picStreet}
-                                        onChange={(e) =>
-                                            setData("picStreet", e.target.value)
-                                        }
-                                        className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-[#335c67] focus:border-[#335c67]"
-                                    />
-                                    {errors.picStreet && (
-                                        <p className="text-sm text-red-600 mt-1">
-                                            {errors.picStreet}
-                                        </p>
-                                    )}
-                                </div>
-
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        RT*
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={data.picRT}
-                                        onChange={(e) =>
-                                            setData("picRT", e.target.value)
-                                        }
-                                        className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-[#335c67] focus:border-[#335c67]"
-                                    />
-                                    {errors.picRT && (
-                                        <p className="text-sm text-red-600 mt-1">
-                                            {errors.picRT}
-                                        </p>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        RW*
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={data.picRW}
-                                        onChange={(e) =>
-                                            setData("picRW", e.target.value)
-                                        }
-                                        className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-[#335c67] focus:border-[#335c67]"
-                                    />
-                                    {errors.picRW && (
-                                        <p className="text-sm text-red-600 mt-1">
-                                            {errors.picRW}
-                                        </p>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        Kelurahan*
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={data.picVillage}
-                                        onChange={(e) =>
-                                            setData(
-                                                "picVillage",
-                                                e.target.value
-                                            )
-                                        }
-                                        className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-[#335c67] focus:border-[#335c67]"
-                                    />
-                                    {errors.picVillage && (
-                                        <p className="text-sm text-red-600 mt-1">
-                                            {errors.picVillage}
-                                        </p>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        Kab/Kota*
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={data.picCity}
-                                        onChange={(e) =>
-                                            setData("picCity", e.target.value)
-                                        }
-                                        className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-[#335c67] focus:border-[#335c67]"
-                                    />
-                                    {errors.picCity && (
-                                        <p className="text-sm text-red-600 mt-1">
-                                            {errors.picCity}
-                                        </p>
-                                    )}
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        Provinsi*
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={data.picProvince}
-                                        onChange={(e) =>
-                                            setData(
-                                                "picProvince",
-                                                e.target.value
-                                            )
-                                        }
-                                        className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-[#335c67] focus:border-[#335c67]"
-                                    />
-                                    {errors.picProvince && (
-                                        <p className="text-sm text-red-600 mt-1">
-                                            {errors.picProvince}
-                                        </p>
-                                    )}
-                                </div>
-                            </div>
-                        </section>
-
-                        {/* DOKUMEN IDENTITAS */}
-                        <section>
-                            <h2 className="text-lg font-semibold text-gray-800 mb-3">
-                                Dokumen Identitas PIC
-                            </h2>
-                            <div className="grid md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        No. KTP PIC*
+                                    <label className="block text-xs font-medium text-gray-700">
+                                        No KTP PIC*
                                     </label>
                                     <input
                                         type="text"
@@ -322,96 +384,257 @@ export default function RegisterSeller({ user, existingSeller }) {
                                         className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-[#335c67] focus:border-[#335c67]"
                                     />
                                     {errors.picNumber && (
-                                        <p className="text-sm text-red-600 mt-1">
+                                        <p className="text-[11px] text-red-600 mt-1">
                                             {errors.picNumber}
                                         </p>
                                     )}
                                 </div>
+                            </div>
+                        </div>
 
+                        {/* Alamat PIC + Wilayah Indonesia */}
+                        <div className="border-b pb-3">
+                            <h2 className="text-sm font-semibold text-gray-800 mb-2">
+                                Alamat Lengkap PIC
+                            </h2>
+                            <div className="space-y-3">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        Foto PIC (jpg/png, ≤2MB)
+                                    <label className="block text-xs font-medium text-gray-700">
+                                        Alamat Jalan (Nama Jalan, No Rumah,
+                                        dll)*
                                     </label>
-                                    <input
-                                        type="file"
-                                        accept=".jpg,.jpeg,.png"
+                                    <textarea
+                                        rows="2"
+                                        value={data.picStreet}
                                         onChange={(e) =>
-                                            setData(
-                                                "picPhoto",
-                                                e.target.files[0]
-                                            )
+                                            setData("picStreet", e.target.value)
                                         }
-                                        className="mt-1 block w-full text-sm text-gray-700"
+                                        className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-[#335c67] focus:border-[#335c67] text-sm"
                                     />
-                                    {errors.picPhoto && (
-                                        <p className="text-sm text-red-600 mt-1">
-                                            {errors.picPhoto}
-                                        </p>
-                                    )}
-                                    {existingSeller?.picPhotoPath && (
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            File sekarang:{" "}
-                                            <span className="underline">
-                                                /storage/
-                                                {existingSeller.picPhotoPath}
-                                            </span>
+                                    {errors.picStreet && (
+                                        <p className="text-[11px] text-red-600 mt-1">
+                                            {errors.picStreet}
                                         </p>
                                     )}
                                 </div>
 
-                                <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        File KTP (jpg/png/pdf, ≤5MB)
+                                <div className="grid md:grid-cols-3 gap-3">
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-700">
+                                            RT*
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={data.picRT}
+                                            onChange={(e) =>
+                                                setData("picRT", e.target.value)
+                                            }
+                                            className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-[#335c67] focus:border-[#335c67]"
+                                        />
+                                        {errors.picRT && (
+                                            <p className="text-[11px] text-red-600 mt-1">
+                                                {errors.picRT}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-700">
+                                            RW*
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={data.picRW}
+                                            onChange={(e) =>
+                                                setData("picRW", e.target.value)
+                                            }
+                                            className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-[#335c67] focus:border-[#335c67]"
+                                        />
+                                        {errors.picRW && (
+                                            <p className="text-[11px] text-red-600 mt-1">
+                                                {errors.picRW}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Dropdown Provinsi / Kab / Kec */}
+                                <div className="grid md:grid-cols-3 gap-3">
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-700">
+                                            Provinsi*
+                                        </label>
+                                        <select
+                                            value={selectedProvinceId}
+                                            onChange={handleProvinceChange}
+                                            className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-[#335c67] focus:border-[#335c67] text-sm"
+                                        >
+                                            <option value="">
+                                                Pilih Provinsi
+                                            </option>
+                                            {provinces.map((prov) => (
+                                                <option
+                                                    key={prov.id}
+                                                    value={prov.id}
+                                                >
+                                                    {prov.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {loadingProvinces && (
+                                            <p className="text-[11px] text-gray-500 mt-1">
+                                                Memuat provinsi...
+                                            </p>
+                                        )}
+                                        {errors.picProvince && (
+                                            <p className="text-[11px] text-red-600 mt-1">
+                                                {errors.picProvince}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-700">
+                                            Kab/Kota*
+                                        </label>
+                                        <select
+                                            value={selectedRegencyId}
+                                            onChange={handleRegencyChange}
+                                            className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-[#335c67] focus:border-[#335c67] text-sm"
+                                            disabled={
+                                                !selectedProvinceId ||
+                                                loadingRegencies
+                                            }
+                                        >
+                                            <option value="">
+                                                {selectedProvinceId
+                                                    ? "Pilih Kab/Kota"
+                                                    : "Pilih provinsi dulu"}
+                                            </option>
+                                            {regencies.map((reg) => (
+                                                <option
+                                                    key={reg.id}
+                                                    value={reg.id}
+                                                >
+                                                    {reg.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {loadingRegencies && (
+                                            <p className="text-[11px] text-gray-500 mt-1">
+                                                Memuat kabupaten/kota...
+                                            </p>
+                                        )}
+                                        {errors.picCity && (
+                                            <p className="text-[11px] text-red-600 mt-1">
+                                                {errors.picCity}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-700">
+                                            Kecamatan/Kelurahan*
+                                        </label>
+                                        <select
+                                            value={selectedDistrictId}
+                                            onChange={handleDistrictChange}
+                                            className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-[#335c67] focus:border-[#335c67] text-sm"
+                                            disabled={
+                                                !selectedRegencyId ||
+                                                loadingDistricts
+                                            }
+                                        >
+                                            <option value="">
+                                                {selectedRegencyId
+                                                    ? "Pilih Kecamatan"
+                                                    : "Pilih kab/kota dulu"}
+                                            </option>
+                                            {districts.map((dist) => (
+                                                <option
+                                                    key={dist.id}
+                                                    value={dist.id}
+                                                >
+                                                    {dist.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {loadingDistricts && (
+                                            <p className="text-[11px] text-gray-500 mt-1">
+                                                Memuat kecamatan...
+                                            </p>
+                                        )}
+                                        {errors.picVillage && (
+                                            <p className="text-[11px] text-red-600 mt-1">
+                                                {errors.picVillage}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Upload Foto */}
+                        <div className="border-b pb-3">
+                            <h2 className="text-sm font-semibold text-gray-800 mb-2">
+                                Dokumen Pendukung
+                            </h2>
+                            <div className="grid md:grid-cols-2 gap-3">
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-700">
+                                        Foto PIC*
+                                    </label>
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) =>
+                                            setData(
+                                                "picPhoto",
+                                                e.target.files[0] || null
+                                            )
+                                        }
+                                        className="mt-1 w-full text-xs"
+                                    />
+                                    {errors.picPhoto && (
+                                        <p className="text-[11px] text-red-600 mt-1">
+                                            {errors.picPhoto}
+                                        </p>
+                                    )}
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-700">
+                                        Foto / File KTP PIC*
                                     </label>
                                     <input
                                         type="file"
                                         accept=".jpg,.jpeg,.png,.pdf"
                                         onChange={(e) =>
                                             setData(
-                                                "picKtpFile",
-                                                e.target.files[0]
+                                                "picKtpPhoto",
+                                                e.target.files[0] || null
                                             )
                                         }
-                                        className="mt-1 block w-full text-sm text-gray-700"
+                                        className="mt-1 w-full text-xs"
                                     />
-                                    {errors.picKtpFile && (
-                                        <p className="text-sm text-red-600 mt-1">
-                                            {errors.picKtpFile}
-                                        </p>
-                                    )}
-                                    {existingSeller?.picKtpPath && (
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            File sekarang:{" "}
-                                            <span className="underline">
-                                                /storage/
-                                                {existingSeller.picKtpPath}
-                                            </span>
+                                    {errors.picKtpPhoto && (
+                                        <p className="text-[11px] text-red-600 mt-1">
+                                            {errors.picKtpPhoto}
                                         </p>
                                     )}
                                 </div>
                             </div>
-                        </section>
+                        </div>
 
-                        {/* TOMBOL */}
-                        <div className="flex justify-end gap-3 pt-4 border-t">
-                            <Link
-                                href={route("dashboard")}
-                                className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 text-sm hover:bg-gray-100"
-                            >
-                                Kembali ke Dashboard
-                            </Link>
-
+                        {/* Tombol submit */}
+                        <div className="flex justify-end pt-2">
                             <button
                                 type="submit"
                                 disabled={processing}
-                                className="px-5 py-2 rounded-md text-sm font-semibold text-white"
+                                className="px-4 py-2 rounded-md text-xs font-semibold text-white"
                                 style={{ backgroundColor: "#335c67" }}
                             >
                                 {processing
-                                    ? "Menyimpan..."
-                                    : existingSeller
-                                    ? "Perbarui Data Toko"
-                                    : "Simpan Data Toko"}
+                                    ? "Mengirim..."
+                                    : "Kirim Formulir Registrasi"}
                             </button>
                         </div>
                     </form>

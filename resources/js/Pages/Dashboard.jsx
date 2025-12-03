@@ -28,13 +28,24 @@ export default function Dashboard({
                 <div className="flex items-center gap-4">
                     {/* Jika Platform Admin */}
                     {auth?.user?.role === "platform_admin" && (
-                        <Link
-                            href={route("admin.sellers.index")}
-                            className="px-3 py-1 rounded text-white text-sm"
-                            style={{ backgroundColor: "#335c67" }}
-                        >
-                            Panel Platform Admin
-                        </Link>
+                        <>
+                            <Link
+                                href={route("admin.dashboard")}
+                                className="px-3 py-1 rounded text-white text-sm"
+                                style={{ backgroundColor: "#335c67" }}
+                            >
+                                Dashboard Platform
+                            </Link>
+                            {route().has("admin.sellers.index") && (
+                                <Link
+                                    href={route("admin.sellers.index")}
+                                    className="px-3 py-1 rounded text-white text-xs border border-white/60"
+                                    style={{ backgroundColor: "#335c67" }}
+                                >
+                                    Kelola Penjual
+                                </Link>
+                            )}
+                        </>
                     )}
 
                     {/* Jika Penjual */}
@@ -97,7 +108,8 @@ export default function Dashboard({
                     Selamat Datang di CekiCekiMart
                 </h1>
                 <p className="text-sm text-gray-600 mt-1">
-                    Platform jual beli Terbaik.
+                    Platform katalog produk, komentar, dan rating tanpa perlu
+                    login bagi pengunjung.
                 </p>
             </div>
 
@@ -107,7 +119,7 @@ export default function Dashboard({
                     <form
                         method="GET"
                         action={route("dashboard")}
-                        className="grid md:grid-cols-5 gap-4 items-end"
+                        className="grid md:grid-cols-4 gap-4 items-end"
                     >
                         {/* Search */}
                         <div className="md:col-span-2">
@@ -139,22 +151,6 @@ export default function Dashboard({
                                         {c}
                                     </option>
                                 ))}
-                            </select>
-                        </div>
-
-                        {/* Kondisi */}
-                        <div>
-                            <label className="block text-xs font-semibold text-gray-600 mb-1">
-                                Kondisi
-                            </label>
-                            <select
-                                name="condition"
-                                defaultValue={filters.condition || ""}
-                                className="w-full border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-[#335c67] focus:border-[#335c67]"
-                            >
-                                <option value="">Semua Kondisi</option>
-                                <option value="BARU">Baru</option>
-                                <option value="BEKAS">Bekas</option>
                             </select>
                         </div>
 
@@ -197,7 +193,7 @@ export default function Dashboard({
                         </div>
 
                         {/* Tombol apply + reset */}
-                        <div className="md:col-span-5 flex items-center justify-end gap-3">
+                        <div className="md:col-span-4 flex items-center justify-end gap-3">
                             <button
                                 type="submit"
                                 className="px-4 py-2 rounded text-sm font-semibold text-white"
@@ -285,16 +281,6 @@ export default function Dashboard({
                                                 </span>
                                             </div>
                                         )}
-
-                                    {/* Kondisi Barang */}
-                                    {product.condition && (
-                                        <div className="text-xs text-gray-600 mb-1">
-                                            Kondisi:{" "}
-                                            {product.condition === "BEKAS"
-                                                ? "Bekas"
-                                                : "Baru"}
-                                        </div>
-                                    )}
 
                                     <div className="text-sm font-bold text-[#335c67] mb-1">
                                         {formatRupiah(product.price)}

@@ -1,4 +1,5 @@
 import { Link, usePage } from "@inertiajs/react";
+import AppLayout from "@/Layouts/AppLayout";
 
 export default function Dashboard({
     products = [],
@@ -7,114 +8,19 @@ export default function Dashboard({
     cities = [],
     provinces = [],
 }) {
-    const { auth, flash } = usePage().props;
+    const { flash } = usePage().props;
 
-    const formatRupiah = (value) => {
-        return new Intl.NumberFormat("id-ID", {
+    const formatRupiah = (value) =>
+        new Intl.NumberFormat("id-ID", {
             style: "currency",
             currency: "IDR",
             minimumFractionDigits: 0,
         }).format(value);
-    };
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Navbar */}
-            <nav className="flex items-center justify-between px-6 py-4 border-b bg-white">
-                <div className="font-bold text-lg" style={{ color: "#335c67" }}>
-                    CekiCekiMart
-                </div>
-
-                <div className="flex items-center gap-4">
-                    {/* Jika Platform Admin */}
-                    {auth?.user?.role === "platform_admin" && (
-                        <>
-                            <Link
-                                href={route("admin.dashboard")}
-                                className="px-3 py-1 rounded text-white text-sm"
-                                style={{ backgroundColor: "#335c67" }}
-                            >
-                                Dashboard Platform
-                            </Link>
-                            {route().has("admin.sellers.index") && (
-                                <Link
-                                    href={route("admin.sellers.index")}
-                                    className="px-3 py-1 rounded text-white text-xs border border-white/60"
-                                    style={{ backgroundColor: "#335c67" }}
-                                >
-                                    Kelola Penjual
-                                </Link>
-                            )}
-                        </>
-                    )}
-
-                    {/* Jika Penjual */}
-                    {auth?.user?.role === "penjual" && (
-                        <>
-                            <Link
-                                href={route("seller.register")}
-                                className="text-sm underline text-[#335c67]"
-                            >
-                                Lengkapi Data Toko
-                            </Link>
-                            <Link
-                                href={route("seller.products.index")}
-                                className="text-sm text-white px-3 py-1 rounded"
-                                style={{ backgroundColor: "#335c67" }}
-                            >
-                                Kelola Produk
-                            </Link>
-                        </>
-                    )}
-
-                    {/* Kanan: Login / Register / Logout */}
-                    {auth.user ? (
-                        <>
-                            <span className="text-sm text-gray-700">
-                                Hai, {auth.user.name}
-                            </span>
-                            <Link
-                                href={route("logout")}
-                                method="post"
-                                as="button"
-                                className="text-sm text-gray-600 hover:underline"
-                            >
-                                Logout
-                            </Link>
-                        </>
-                    ) : (
-                        <>
-                            <Link
-                                href={route("login")}
-                                className="text-sm text-gray-700 hover:underline"
-                            >
-                                Login
-                            </Link>
-                            <Link
-                                href={route("register")}
-                                className="text-sm text-white px-3 py-1 rounded"
-                                style={{ backgroundColor: "#335c67" }}
-                            >
-                                Daftar Penjual
-                            </Link>
-                        </>
-                    )}
-                </div>
-            </nav>
-
-            {/* Banner atas */}
-            <div className="px-6 py-6 bg-white border-b">
-                <h1 className="text-2xl font-bold text-gray-800">
-                    Selamat Datang di CekiCekiMart
-                </h1>
-                <p className="text-sm text-gray-600 mt-1">
-                    Platform katalog produk, komentar, dan rating tanpa perlu
-                    login bagi pengunjung.
-                </p>
-            </div>
-
+        <AppLayout>
             {/* Search & Filter */}
-            <div className="max-w-6xl mx-auto mt-4 px-4">
+            <div className="max-w-6xl mx-auto mt-6 px-4">
                 <div className="bg-white p-4 rounded shadow">
                     <form
                         method="GET"
@@ -192,8 +98,8 @@ export default function Dashboard({
                             </select>
                         </div>
 
-                        {/* Tombol apply + reset */}
-                        <div className="md:col-span-4 flex items-center justify-end gap-3">
+                        {/* Buttons */}
+                        <div className="md:col-span-4 flex justify-end gap-3">
                             <button
                                 type="submit"
                                 className="px-4 py-2 rounded text-sm font-semibold text-white"
@@ -212,7 +118,7 @@ export default function Dashboard({
                 </div>
             </div>
 
-            {/* Flash message */}
+            {/* Flash Message */}
             {flash?.success && (
                 <div className="max-w-6xl mx-auto mt-4 px-4">
                     <div className="rounded border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm text-emerald-800">
@@ -220,15 +126,8 @@ export default function Dashboard({
                     </div>
                 </div>
             )}
-            {flash?.error && (
-                <div className="max-w-6xl mx-auto mt-4 px-4">
-                    <div className="rounded border border-red-300 bg-red-50 px-4 py-2 text-sm text-red-800">
-                        {flash.error}
-                    </div>
-                </div>
-            )}
 
-            {/* Katalog Produk */}
+            {/* Produk */}
             <div className="max-w-6xl mx-auto px-4 py-6">
                 <h2 className="text-lg font-semibold text-gray-800 mb-4">
                     Produk Terbaru
@@ -236,8 +135,7 @@ export default function Dashboard({
 
                 {products.length === 0 ? (
                     <p className="text-sm text-gray-500">
-                        Belum ada produk yang dipublikasikan. Penjual dengan
-                        toko ACTIVE dapat mulai menambahkan produk.
+                        Belum ada produk yang dipublikasikan.
                     </p>
                 ) : (
                     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
@@ -265,7 +163,6 @@ export default function Dashboard({
                                         {product.name}
                                     </div>
 
-                                    {/* Rating & jumlah ulasan */}
                                     {product.ratingAverage &&
                                         product.reviewCount > 0 && (
                                             <div className="flex items-center text-xs text-gray-600 mb-1">
@@ -286,19 +183,17 @@ export default function Dashboard({
                                         {formatRupiah(product.price)}
                                     </div>
                                     <div className="text-xs text-gray-500">
-                                        {product.storeName || "Toko"}
+                                        {product.storeName}
                                     </div>
-                                    {product.location && (
-                                        <div className="text-xs text-gray-400">
-                                            {product.location}
-                                        </div>
-                                    )}
+                                    <div className="text-xs text-gray-400">
+                                        {product.location}
+                                    </div>
                                 </div>
                             </Link>
                         ))}
                     </div>
                 )}
             </div>
-        </div>
+        </AppLayout>
     );
 }

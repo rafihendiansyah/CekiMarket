@@ -40,26 +40,58 @@ export default function AdminDashboard({
             <Head title="Dashboard Platform Admin" />
 
             <div className="min-h-screen bg-gray-50">
-                {/* Navbar sederhana */}
+                {/* ================= NAVBAR PLATFORM ADMIN ================ */}
                 <nav className="flex items-center justify-between px-6 py-4 border-b bg-white">
                     <div
                         className="font-bold text-lg"
                         style={{ color: "#335c67" }}
                     >
-                        CekiCekiMart &mdash; Platform Admin
+                        CekiCekiMart — Platform Admin
                     </div>
-                    <div className="flex items-center gap-4 text-sm">
+
+                    <div className="flex items-center gap-3">
+                        {/* SRS-09: Laporan penjual berdasarkan status */}
+                        <a
+                            href={route("admin.reports.sellers.status")}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-2 rounded-md text-xs font-semibold text-white shadow"
+                            style={{ backgroundColor: "#335c67" }}
+                        >
+                            Laporan Penjual (Status)
+                        </a>
+
+                        {/* SRS-10: Laporan toko per provinsi */}
+                        <a
+                            href={route("admin.reports.sellers.province")}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-2 rounded-md text-xs font-semibold text-white shadow"
+                            style={{ backgroundColor: "#335c67" }}
+                        >
+                            Laporan Toko per Provinsi
+                        </a>
+
+                        <a
+                            href={route("admin.reports.products.rating")}
+                            className="px-3 py-2 rounded-md text-xs font-semibold text-white shadow"
+                            style={{ backgroundColor: "#335c67" }}
+                        >
+                            Laporan Produk (Rating)
+                        </a>
+
                         <Link
                             href={route("dashboard")}
-                            className="text-gray-600 hover:underline"
+                            className="text-sm text-gray-600 hover:underline"
                         >
                             &larr; Kembali ke Beranda
                         </Link>
                     </div>
                 </nav>
 
+                {/* =================== DASHBOARD CONTENT =================== */}
                 <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
-                    {/* JUDUL */}
+                    {/* Judul Halaman */}
                     <div>
                         <h1 className="text-xl font-bold text-gray-800">
                             Dashboard Statistik Platform
@@ -70,9 +102,9 @@ export default function AdminDashboard({
                         </p>
                     </div>
 
-                    {/* KARTU STATISTIK UTAMA */}
+                    {/* =================== KARTU STATISTIK =================== */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {/* Total ulasan */}
+                        {/* Total Ulasan */}
                         <div className={cardStyle}>
                             <div>
                                 <div className="text-xs text-gray-500">
@@ -85,6 +117,7 @@ export default function AdminDashboard({
                                     Jumlah seluruh komentar & rating yang masuk.
                                 </div>
                             </div>
+
                             <a
                                 href="#section-reviews"
                                 className="mt-2 text-[11px] text-[#335c67] underline self-end"
@@ -93,7 +126,7 @@ export default function AdminDashboard({
                             </a>
                         </div>
 
-                        {/* Pengunjung pernah review */}
+                        {/* Pengunjung Unik */}
                         <div className={cardStyle}>
                             <div>
                                 <div className="text-xs text-gray-500">
@@ -107,15 +140,16 @@ export default function AdminDashboard({
                                     komentar & rating.
                                 </div>
                             </div>
+
                             <a
-                                href="#section-reviews"
+                                href="#section-visitors"
                                 className="mt-2 text-[11px] text-[#335c67] underline self-end"
                             >
                                 Detail pengunjung & komentarnya
                             </a>
                         </div>
 
-                        {/* Penjual aktif */}
+                        {/* Penjual Aktif */}
                         <div className={cardStyle}>
                             <div>
                                 <div className="text-xs text-gray-500">
@@ -125,13 +159,10 @@ export default function AdminDashboard({
                                     {stats.activeSellers}
                                 </div>
                                 <div className="text-[11px] text-gray-500 mt-1">
-                                    Toko dengan status{" "}
-                                    <span className="font-semibold">
-                                        ACTIVE
-                                    </span>
-                                    .
+                                    Toko dengan status <strong>ACTIVE</strong>.
                                 </div>
                             </div>
+
                             <Link
                                 href={route("admin.sellers.index")}
                                 className="mt-2 text-[11px] text-[#335c67] underline self-end"
@@ -140,7 +171,7 @@ export default function AdminDashboard({
                             </Link>
                         </div>
 
-                        {/* Penjual tidak aktif */}
+                        {/* Penjual Tidak Aktif */}
                         <div className={cardStyle}>
                             <div>
                                 <div className="text-xs text-gray-500">
@@ -153,6 +184,7 @@ export default function AdminDashboard({
                                     Toko berstatus PENDING atau REJECTED.
                                 </div>
                             </div>
+
                             <Link
                                 href={route("admin.sellers.index")}
                                 className="mt-2 text-[11px] text-[#335c67] underline self-end"
@@ -162,15 +194,14 @@ export default function AdminDashboard({
                         </div>
                     </div>
 
-                    {/* BARIS CHART 1: PRODUK & TOKO */}
+                    {/* ================= CHART BARIS 1 ================= */}
                     <div className="grid md:grid-cols-2 gap-4">
                         {/* Produk per kategori */}
                         <div className="bg-white rounded-lg shadow-sm border p-3">
-                            <div className="flex items-center justify-between mb-2">
-                                <h2 className="text-sm font-semibold text-gray-800">
-                                    Sebaran Produk Berdasarkan Kategori
-                                </h2>
-                            </div>
+                            <h2 className="text-sm font-semibold text-gray-800 mb-2">
+                                Sebaran Produk Berdasarkan Kategori
+                            </h2>
+
                             {categoryChart.labels.length === 0 ? (
                                 <p className="text-xs text-gray-500">
                                     Belum ada produk aktif yang memiliki
@@ -191,9 +222,7 @@ export default function AdminDashboard({
                                     }}
                                     options={{
                                         responsive: true,
-                                        plugins: {
-                                            legend: { display: false },
-                                        },
+                                        plugins: { legend: { display: false } },
                                         scales: {
                                             x: {
                                                 ticks: { font: { size: 10 } },
@@ -211,11 +240,10 @@ export default function AdminDashboard({
 
                         {/* Toko per provinsi */}
                         <div className="bg-white rounded-lg shadow-sm border p-3">
-                            <div className="flex items-center justify-between mb-2">
-                                <h2 className="text-sm font-semibold text-gray-800">
-                                    Sebaran Toko Berdasarkan Provinsi
-                                </h2>
-                            </div>
+                            <h2 className="text-sm font-semibold text-gray-800 mb-2">
+                                Sebaran Toko Berdasarkan Provinsi
+                            </h2>
+
                             {provinceChart.labels.length === 0 ? (
                                 <p className="text-xs text-gray-500">
                                     Belum ada penjual yang mengisi provinsi
@@ -236,9 +264,7 @@ export default function AdminDashboard({
                                     }}
                                     options={{
                                         responsive: true,
-                                        plugins: {
-                                            legend: { display: false },
-                                        },
+                                        plugins: { legend: { display: false } },
                                         scales: {
                                             x: { ticks: { font: { size: 9 } } },
                                             y: {
@@ -253,13 +279,14 @@ export default function AdminDashboard({
                         </div>
                     </div>
 
-                    {/* BARIS CHART 2: STATUS PENJUAL & TOP PENGUNJUNG */}
+                    {/* ================= BARIS 2: STATUS PENJUAL + TOP VISITOR ================= */}
                     <div className="grid md:grid-cols-2 gap-4">
-                        {/* Status penjual */}
+                        {/* Status Penjual */}
                         <div className="bg-white rounded-lg shadow-sm border p-3">
                             <h2 className="text-sm font-semibold text-gray-800 mb-2">
                                 Status Penjual (Aktif vs Tidak Aktif)
                             </h2>
+
                             {sellerStatusChart.data.reduce(
                                 (a, b) => a + b,
                                 0
@@ -275,8 +302,8 @@ export default function AdminDashboard({
                                             {
                                                 data: sellerStatusChart.data,
                                                 backgroundColor: [
-                                                    "rgba(51, 92, 103, 0.8)", // aktif
-                                                    "rgba(242, 163, 101, 0.8)", // tidak aktif
+                                                    "rgba(51, 92, 103, 0.8)",
+                                                    "rgba(242, 163, 101, 0.8)",
                                                 ],
                                             },
                                         ],
@@ -295,7 +322,7 @@ export default function AdminDashboard({
                             )}
                         </div>
 
-                        {/* Pengunjung yang pernah review */}
+                        {/* Pengunjung yang Review */}
                         <div
                             id="section-visitors"
                             className="bg-white rounded-lg shadow-sm border p-3 flex flex-col"
@@ -350,7 +377,7 @@ export default function AdminDashboard({
                                 </p>
                             )}
 
-                            {/* Tabel kecil di bawah grafik */}
+                            {/* Tabel kecil */}
                             {visitorStats.length > 0 && (
                                 <div className="mt-1 overflow-x-auto">
                                     <table className="min-w-full text-[11px]">
@@ -374,7 +401,7 @@ export default function AdminDashboard({
                                                     className="border-b last:border-b-0"
                                                 >
                                                     <td className="py-1 pr-2 text-gray-800">
-                                                        {v.name || "-"}
+                                                        {v.name}
                                                     </td>
                                                     <td className="py-1 pr-2 text-gray-500">
                                                         {v.email}
@@ -391,7 +418,7 @@ export default function AdminDashboard({
                         </div>
                     </div>
 
-                    {/* DAFTAR REVIEW TERBARU */}
+                    {/* =================== REVIEW TERBARU =================== */}
                     <div
                         id="section-reviews"
                         className="bg-white rounded-lg shadow-sm border p-3"

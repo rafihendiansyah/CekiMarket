@@ -7,8 +7,8 @@ use App\Http\Controllers\PlatformAdminSellerController;
 use App\Http\Controllers\SellerProductController;
 use App\Http\Controllers\ProductCatalogController;
 use App\Http\Controllers\ProductReviewController;
-use App\Http\Controllers\Admin\AdminDashboardController; 
-use Inertia\Inertia;
+use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\SellerReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -70,6 +70,26 @@ Route::middleware('auth')->group(function () {
         ->name('seller.products.destroy');
     Route::post('/seller/products/{product}/toggle-status', [SellerProductController::class, 'toggleStatus'])
         ->name('seller.products.toggle-status');
+
+    // Laporan Penjual berdasarkan Status (SRS-09)
+    Route::get(
+        '/admin/reports/sellers/status',
+        [SellerReportController::class, 'sellersReportPdf']
+    )->name('admin.reports.sellers.status');
+
+    // Laporan Penjual berdasarkan Provinsi (SRS-10)
+    Route::get(
+        '/admin/reports/sellers/province',
+        [SellerReportController::class, 'sellersByProvincePdf']
+    )->name('admin.reports.sellers.province');
+
+    // Laporan produk berdasarkan rating - SRS 11
+    Route::get(
+        '/admin/reports/products-by-rating', 
+        [SellerReportController::class, 'productsByRatingPdf']
+    )->name('admin.reports.products.rating');
+
+
 });
 
 // Auth routes (login, register, dll)

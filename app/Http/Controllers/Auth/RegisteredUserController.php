@@ -48,6 +48,8 @@ class RegisteredUserController extends Controller
         Auth::login($user);
 
         // LANGSUNG arahkan ke form registrasi penjual (data toko)
-        return redirect()->route('seller.register');
+        return redirect()
+        ->route('dashboard')
+        ->with('success', 'Pendaftaran akun berhasil!');
     }
 }

@@ -1,4 +1,6 @@
+import React, { useState } from "react";
 import { Link, usePage } from "@inertiajs/react";
+import FlashModal from "@/Components/FlashModal";
 
 export default function Dashboard({
     products = [],
@@ -8,6 +10,7 @@ export default function Dashboard({
     provinces = [],
 }) {
     const { auth, flash } = usePage().props;
+    const [showFlash, setShowFlash] = useState(true);
 
     const formatRupiah = (value) => {
         return new Intl.NumberFormat("id-ID", {
@@ -200,20 +203,21 @@ export default function Dashboard({
                 </div>
             </div>
 
-            {/* Flash message */}
-            {flash?.success && (
-                <div className="max-w-6xl mx-auto mt-4 px-4">
-                    <div className="rounded border border-emerald-300 bg-emerald-50 px-4 py-2 text-sm text-emerald-800">
-                        {flash.success}
-                    </div>
-                </div>
+            {/* Modal besar di tengah */}
+            {flash?.success && showFlash && (
+                <FlashModal
+                    message={flash.success}
+                    type="success"
+                    onClose={() => setShowFlash(false)}
+                />
             )}
-            {flash?.error && (
-                <div className="max-w-6xl mx-auto mt-4 px-4">
-                    <div className="rounded border border-red-300 bg-red-50 px-4 py-2 text-sm text-red-800">
-                        {flash.error}
-                    </div>
-                </div>
+
+            {flash?.error && showFlash && (
+                <FlashModal
+                    message={flash.error}
+                    type="error"
+                    onClose={() => setShowFlash(false)}
+                />
             )}
 
             {/* Katalog Produk */}

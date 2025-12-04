@@ -1,9 +1,30 @@
 import ApplicationLogo from "@/Components/ApplicationLogo";
-import { Link } from "@inertiajs/react";
+import FlashModal from "@/Components/FlashModal";
+import { usePage } from "@inertiajs/react";
+import React, { useState, useEffect } from "react";
 
 export default function GuestLayout({ children }) {
+    const { flash } = usePage().props;
+    const [showFlash, setShowFlash] = useState(!!flash?.success);
+
+    useEffect(() => {
+        if (flash?.success) {
+            setShowFlash(true);
+        }
+    }, [flash]);
+
     return (
         <div className="min-h-screen flex flex-col items-center bg-white text-gray-900">
+
+            {/* FLASH MODAL */}
+            {showFlash && flash?.success && (
+                <FlashModal
+                    message={flash.success}
+                    type="success"
+                    onClose={() => setShowFlash(false)}
+                />
+            )}
+
             {/* BAGIAN BRANDING */}
             <div className="mt-10 mb-6 text-center">
                 <h1

@@ -17,7 +17,39 @@ export default function FlashModal({ message, type = "success", onClose }) {
                     className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center text-white text-4xl shadow-md`}
                     style={{ backgroundColor: "#335c67" }}
                 >
-                    {isSuccess ? "✔" : "⚠"}
+
+                {isSuccess ? (
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-10 h-10 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={3}
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M5 13l4 4L19 7"
+                        />
+                    </svg>
+                ) : (
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-10 h-10 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={3}
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 9v2m0 4h.01M12 6a9 9 0 100 18 9 9 0 000-18z"
+                        />
+                    </svg>
+                )}
+
                 </div>
 
                 {/* Judul */}

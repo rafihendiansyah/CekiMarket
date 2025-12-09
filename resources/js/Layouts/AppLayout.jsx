@@ -42,6 +42,13 @@ export default function AppLayout({ children }) {
                     {auth?.user?.role === "penjual" && (
                         <>
                             <Link
+                                href={route("seller.dashboard")}
+                                className={buttonClass}
+                                style={{ backgroundColor: "#335c67" }}
+                            >
+                                Dashboard Penjual
+                            </Link>
+                            <Link
                                 href={route("seller.register")}
                                 className={linkClass}
                             >

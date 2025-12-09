@@ -9,6 +9,8 @@ use App\Http\Controllers\ProductCatalogController;
 use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\Admin\AdminDashboardController;
 use App\Http\Controllers\Admin\SellerReportController;
+use App\Http\Controllers\Seller\SellerDashboardController;
+use App\Http\Controllers\Seller\SellerReportController as SellerSellerReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,6 +36,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Dashboard Seller - SRS 08
+    Route::get('/seller/dashboard', [SellerDashboardController::class, 'index'])
+        ->name('seller.dashboard');
+
+    // Laporan Penjual - SRS 12, 13, 14
+    Route::get('/seller/reports/products/stock', [SellerSellerReportController::class, 'productsByStockPdf'])
+        ->name('seller.reports.products.stock');
+    Route::get('/seller/reports/products/rating', [SellerSellerReportController::class, 'productsByRatingPdf'])
+        ->name('seller.reports.products.rating');
+    Route::get('/seller/reports/products/to-restock', [SellerSellerReportController::class, 'productsToRestockPdf'])
+        ->name('seller.reports.products.to-restock');
 
     // Dashboard Platform Admin - SRS 07
     Route::get('/admin/dashboard', [AdminDashboardController::class, 'index'])

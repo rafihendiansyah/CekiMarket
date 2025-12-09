@@ -12,6 +12,7 @@ export default function ProductShow({ product, store, reviews }) {
         comment: "",
     });
 
+
     const submit = (e) => {
         e.preventDefault();
         post(route("products.reviews.store", product.id), {

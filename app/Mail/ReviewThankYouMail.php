@@ -2,8 +2,6 @@
 
 namespace App\Mail;
 
-use App\Models\Product;
-use App\Models\Review;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -12,24 +10,20 @@ class ReviewThankYouMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public Product $product;
-    public Review $review;
+    public $name;
+    public $productName;
+    public $rating;
 
-    /**
-     * Create a new message instance.
-     */
-    public function __construct(Product $product, Review $review)
+    public function __construct($name, $productName, $rating)
     {
-        $this->product = $product;
-        $this->review = $review;
+        $this->name = $name;
+        $this->productName = $productName;
+        $this->rating = $rating;
     }
 
-    /**
-     * Build the message.
-     */
-    public function build(): self
+    public function build()
     {
-        return $this->subject('Terima kasih atas ulasan Anda di CekiCekiMart')
-            ->view('emails.review_thank_you');
+        return $this->subject('Terima Kasih atas Review Anda!')
+            ->view('emails.thank_you_review');
     }
 }

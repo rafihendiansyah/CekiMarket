@@ -15,7 +15,7 @@ class ProductReviewController extends Controller
      */
     public function store(Request $request, Product $product)
     {
-        // Pastikan produk & toko masih ACTIVE
+        // Pastikan produk & toko ACTIVE
         if (
             $product->status !== 'ACTIVE' ||
             !$product->seller ||
@@ -28,7 +28,7 @@ class ProductReviewController extends Controller
         $validated = $request->validate([
             'visitor_name'  => ['required', 'string', 'max:255'],
             'visitor_phone' => ['required', 'string', 'max:30'],
-            'visitor_email' => ['required', 'string', 'email', 'max:255'],
+            'visitor_email' => ['required', 'email', 'max:255'],
             'rating'        => ['required', 'integer', 'min:1', 'max:5'],
             'comment'       => ['nullable', 'string'],
         ]);
@@ -36,13 +36,17 @@ class ProductReviewController extends Controller
         // Simpan review
         $review = $product->reviews()->create($validated);
 
-        // Kirim email ucapan terima kasih (MAIL_MAILER=log untuk dev)
-        Mail::to($review->visitor_email)->send(
-            new ReviewThankYouMail($product, $review)
+        // Kirim Email (menggunakan versi yang sudah terbukti bekerja dari teman)
+        Mail::to($validated['visitor_email'])->send(
+            new ReviewThankYouMail(
+                $validated['visitor_name'],
+                $product->name,
+                $validated['rating']
+            )
         );
 
         return redirect()
             ->route('products.show', $product->id)
-            ->with('success', 'Terima kasih, komentar dan rating Anda telah dikirim.');
+            ->with('success', 'Terima kasih, komentar & rating Anda telah dikirim.');
     }
 }

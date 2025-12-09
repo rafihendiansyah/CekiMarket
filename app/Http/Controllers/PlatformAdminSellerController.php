@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Seller;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Mail\SellerApprovedMail;
+use App\Mail\SellerRejectedMail;
 
 class PlatformAdminSellerController extends Controller
 {
@@ -81,7 +83,7 @@ class PlatformAdminSellerController extends Controller
     }
 
     /**
-     * Set status seller menjadi ACTIVE.
+     * APPROVE SELLER → Kirim email persetujuan
      */
     public function approve(Seller $seller): RedirectResponse
     {
@@ -95,15 +97,21 @@ class PlatformAdminSellerController extends Controller
             'status' => 'ACTIVE',
         ]);
 
-        // TODO: Kirim email ke seller kalau mau
+        // === KIRIM EMAIL APPROVED ===
+        Mail::to($seller->user->email)->send(
+            new SellerApprovedMail(
+                $seller->user->name,
+                $seller->storeName
+            )
+        );
 
         return redirect()
             ->route('admin.sellers.index')
-            ->with('success', 'Seller berhasil diset menjadi ACTIVE.');
+            ->with('success', 'Seller berhasil diset menjadi ACTIVE dan email telah dikirim.');
     }
 
     /**
-     * Set status seller menjadi REJECTED.
+     * REJECT SELLER → Kirim email penolakan
      */
     public function reject(Seller $seller): RedirectResponse
     {
@@ -117,10 +125,16 @@ class PlatformAdminSellerController extends Controller
             'status' => 'REJECTED',
         ]);
 
-        // TODO: Kirim email ke seller kalau mau
+        // === KIRIM EMAIL REJECTED ===
+        Mail::to($seller->user->email)->send(
+            new SellerRejectedMail(
+                $seller->user->name,
+                $seller->storeName
+            )
+        );
 
         return redirect()
             ->route('admin.sellers.index')
-            ->with('success', 'Seller berhasil diset menjadi REJECTED.');
+            ->with('success', 'Seller berhasil diset menjadi REJECTED dan email telah dikirim.');
     }
 }

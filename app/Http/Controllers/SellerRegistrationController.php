@@ -107,6 +107,6 @@ class SellerRegistrationController extends Controller
 
         return redirect()
             ->route('dashboard')
-            ->with('success', $message);
+            ->with('success', 'Akun penjual berhasil dibuat!');
     }
 }

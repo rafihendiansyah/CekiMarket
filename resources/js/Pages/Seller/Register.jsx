@@ -217,6 +217,24 @@ export default function SellerRegister() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+        
+        // Validasi client-side: pastikan foto PIC dan KTP diunggah jika belum ada seller atau seller tidak punya foto
+        const hasExistingPhoto = existingSeller?.picPhotoPath;
+        const hasExistingKtp = existingSeller?.picKtpPath;
+        
+        const photoRequired = !existingSeller || !hasExistingPhoto;
+        const ktpRequired = !existingSeller || !hasExistingKtp;
+        
+        if (photoRequired && !data.picPhoto) {
+            alert('Foto PIC wajib diunggah. Silakan pilih foto PIC terlebih dahulu.');
+            return;
+        }
+        
+        if (ktpRequired && !data.picKtpPhoto) {
+            alert('Foto/File KTP PIC wajib diunggah. Silakan pilih foto/file KTP terlebih dahulu.');
+            return;
+        }
+        
         post(route("seller.register.store"), {
             onSuccess: () => {
                 reset();
@@ -241,9 +259,12 @@ export default function SellerRegister() {
                         </h1>
                         <Link
                             href={route("dashboard")}
-                            className="text-xs text-gray-500 hover:underline"
+                            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
                         >
-                            &larr; Kembali ke Beranda
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            </svg>
+                            Kembali ke Beranda
                         </Link>
                     </div>
 
@@ -341,12 +362,18 @@ export default function SellerRegister() {
                                     <input
                                         type="text"
                                         value={data.picPhone}
-                                        onChange={(e) =>
-                                            setData("picPhone", e.target.value)
-                                        }
+                                        onChange={(e) => {
+                                            // Hanya izinkan angka
+                                            const value = e.target.value.replace(/\D/g, '');
+                                            setData("picPhone", value);
+                                        }}
+                                        maxLength={13}
                                         className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-[#335c67] focus:border-[#335c67]"
-                                        placeholder="Contoh: 0812xxxxxxx"
+                                        placeholder="Contoh: 081234567890"
                                     />
+                                    <p className="text-[10px] text-gray-500 mt-1">
+                                        Minimal 10 digit, maksimal 13 digit (nomor HP Indonesia)
+                                    </p>
                                     {errors.picPhone && (
                                         <p className="text-[11px] text-red-600 mt-1">
                                             {errors.picPhone}
@@ -378,11 +405,18 @@ export default function SellerRegister() {
                                     <input
                                         type="text"
                                         value={data.picNumber}
-                                        onChange={(e) =>
-                                            setData("picNumber", e.target.value)
-                                        }
+                                        onChange={(e) => {
+                                            // Hanya izinkan angka
+                                            const value = e.target.value.replace(/\D/g, '');
+                                            setData("picNumber", value);
+                                        }}
+                                        maxLength={16}
                                         className="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-[#335c67] focus:border-[#335c67]"
+                                        placeholder="16 digit nomor KTP"
                                     />
+                                    <p className="text-[10px] text-gray-500 mt-1">
+                                        Harus tepat 16 digit
+                                    </p>
                                     {errors.picNumber && (
                                         <p className="text-[11px] text-red-600 mt-1">
                                             {errors.picNumber}
@@ -582,7 +616,21 @@ export default function SellerRegister() {
                                 <div>
                                     <label className="block text-xs font-medium text-gray-700">
                                         Foto PIC*
+                                        {existingSeller?.picPhotoPath && (
+                                            <span className="text-gray-500 font-normal ml-1">
+                                                (Foto sudah ada, kosongkan jika tidak ingin mengubah)
+                                            </span>
+                                        )}
                                     </label>
+                                    {existingSeller?.picPhotoPath && (
+                                        <div className="mb-2">
+                                            <img
+                                                src={`/storage/${existingSeller.picPhotoPath}`}
+                                                alt="Foto PIC saat ini"
+                                                className="w-24 h-24 object-cover rounded border"
+                                            />
+                                        </div>
+                                    )}
                                     <input
                                         type="file"
                                         accept="image/*"
@@ -603,7 +651,32 @@ export default function SellerRegister() {
                                 <div>
                                     <label className="block text-xs font-medium text-gray-700">
                                         Foto / File KTP PIC*
+                                        {existingSeller?.picKtpPath && (
+                                            <span className="text-gray-500 font-normal ml-1">
+                                                (File sudah ada, kosongkan jika tidak ingin mengubah)
+                                            </span>
+                                        )}
                                     </label>
+                                    {existingSeller?.picKtpPath && (
+                                        <div className="mb-2">
+                                            {existingSeller.picKtpPath.endsWith('.pdf') ? (
+                                                <a
+                                                    href={`/storage/${existingSeller.picKtpPath}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 underline text-xs"
+                                                >
+                                                    Lihat File KTP saat ini (PDF)
+                                                </a>
+                                            ) : (
+                                                <img
+                                                    src={`/storage/${existingSeller.picKtpPath}`}
+                                                    alt="KTP saat ini"
+                                                    className="w-24 h-24 object-cover rounded border"
+                                                />
+                                            )}
+                                        </div>
+                                    )}
                                     <input
                                         type="file"
                                         accept=".jpg,.jpeg,.png,.pdf"

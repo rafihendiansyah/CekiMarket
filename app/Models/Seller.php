@@ -26,6 +26,7 @@ class Seller extends Model
         'picPhotoPath',
         'picKtpPath',
         'status',
+        'submission_count',
     ];
 
     public function user()

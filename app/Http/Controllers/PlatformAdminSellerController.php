@@ -36,6 +36,7 @@ class PlatformAdminSellerController extends Controller
                     'createdAt' => $seller->created_at->format('d-m-Y H:i'),
                     'userName' => $seller->user?->name,
                     'userEmail' => $seller->user?->email,
+                    'submissionCount' => $seller->submission_count ?? 1,
                 ];
             });
 
@@ -78,6 +79,7 @@ class PlatformAdminSellerController extends Controller
                 'createdAt' => $seller->created_at->format('d-m-Y H:i'),
                 'userName' => $seller->user->name,
                 'userEmail' => $seller->user->email,
+                'submissionCount' => $seller->submission_count ?? 1,
             ]
         ]);
     }
@@ -126,10 +128,13 @@ class PlatformAdminSellerController extends Controller
         ]);
 
         // === KIRIM EMAIL REJECTED ===
+        // Alasan penolakan (bisa dikembangkan untuk input dari admin)
+        $rejectionReason = 'Data yang Anda berikan belum memenuhi syarat administrasi sebagai penjual. Silakan lengkapi kembali data toko dan ajukan ulang.';
+        
         Mail::to($seller->user->email)->send(
             new SellerRejectedMail(
                 $seller->user->name,
-                $seller->storeName
+                $rejectionReason
             )
         );
 

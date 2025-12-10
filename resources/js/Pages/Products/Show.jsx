@@ -3,6 +3,7 @@ import { useState } from "react";
 
 export default function ProductShow({ product, store, reviews }) {
     const { flash } = usePage().props;
+    const [showFullDescription, setShowFullDescription] = useState(false);
 
     const { data, setData, post, processing, errors, reset } = useForm({
         visitor_name: "",
@@ -11,6 +12,14 @@ export default function ProductShow({ product, store, reviews }) {
         rating: 5,
         comment: "",
     });
+
+    // Logika untuk deskripsi
+    const description = product.description || "Belum ada deskripsi.";
+    const maxLength = 200; // Karakter maksimal sebelum dipotong
+    const shouldTruncate = description.length > maxLength;
+    const displayDescription = showFullDescription || !shouldTruncate
+        ? description
+        : description.substring(0, maxLength) + "...";
 
 
     const submit = (e) => {
@@ -80,9 +89,12 @@ export default function ProductShow({ product, store, reviews }) {
                 <div className="max-w-5xl mx-auto px-4">
                     <Link
                         href={route("dashboard")}
-                        className="text-sm text-gray-600 hover:underline"
+                        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition"
                     >
-                        &larr; Kembali ke beranda
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Kembali ke Beranda
                     </Link>
 
                     {flash?.success && (
@@ -100,7 +112,7 @@ export default function ProductShow({ product, store, reviews }) {
                                         <img
                                             src={mainImage}
                                             alt={product.name}
-                                            className="w-full h-full object-cover"
+                                            className="w-full h-full object-contain"
                                         />
 
                                         {/* Tombol kiri/kanan, hanya muncul kalau lebih dari 1 foto */}
@@ -201,9 +213,23 @@ export default function ProductShow({ product, store, reviews }) {
                                     Deskripsi Produk
                                 </h2>
                                 <p className="whitespace-pre-line">
-                                    {product.description ||
-                                        "Belum ada deskripsi."}
+                                    {displayDescription}
                                 </p>
+                                {shouldTruncate && (
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setShowFullDescription(
+                                                !showFullDescription
+                                            )
+                                        }
+                                        className="mt-2 text-xs text-[#335c67] hover:underline font-medium"
+                                    >
+                                        {showFullDescription
+                                            ? "Tampilkan lebih sedikit"
+                                            : "Tampilkan lebih banyak"}
+                                    </button>
+                                )}
                             </div>
 
                             {/* Info toko */}

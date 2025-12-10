@@ -80,7 +80,6 @@ class AdminDashboardController extends Controller
         // --------- DAFTAR REVIEW TERBARU (UNTUK DETAIL) ---------
         $recentReviewsCollection = ProductReview::with('product')
             ->latest()
-            ->limit(20)
             ->get();
 
         $recentReviews = $recentReviewsCollection->map(function ($r) {

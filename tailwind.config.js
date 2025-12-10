@@ -15,6 +15,12 @@ export default {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
+            colors: {
+                'hunyadi-yellow': '#E09F3E',
+                'auburn': '#9E2A2B',
+                'dark-slate': '#335C67',
+                'vanilla': '#FFF3B0',
+            },
         },
     },
 

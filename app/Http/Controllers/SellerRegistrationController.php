@@ -57,6 +57,17 @@ class SellerRegistrationController extends Controller
             abort(403, 'Hanya pengguna dengan role penjual yang boleh mengisi data toko.');
         }
 
+        $seller = $user->seller;
+        
+        // Tentukan apakah foto wajib atau tidak
+        // Wajib jika: seller belum ada ATAU seller ada tapi tidak punya foto sebelumnya
+        $isNewSeller = !$seller;
+        $hasExistingPhoto = $seller && $seller->picPhotoPath;
+        $hasExistingKtp = $seller && $seller->picKtpPath;
+        
+        $photoRequired = $isNewSeller || !$hasExistingPhoto;
+        $ktpRequired = $isNewSeller || !$hasExistingKtp;
+
         $validated = $request->validate([
             // Data Toko
             'storeName'        => ['required', 'string', 'max:255'],
@@ -64,7 +75,7 @@ class SellerRegistrationController extends Controller
 
             // Data PIC
             'picName'  => ['required', 'string', 'max:255'],
-            'picPhone' => ['required', 'string', 'max:20'],
+            'picPhone' => ['required', 'string', 'regex:/^[0-9]{10,13}$/'],
             'picEmail' => ['required', 'email', 'max:255'],
 
             // Alamat
@@ -76,31 +87,56 @@ class SellerRegistrationController extends Controller
             'picProvince' => ['required', 'string', 'max:255'],
 
             // Dokumen Identitas
-            'picNumber'    => ['required', 'string', 'max:50'], // No KTP PIC
-            'picPhoto'     => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
-            'picKtpPhoto'  => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            'picNumber'    => ['required', 'string', 'regex:/^[0-9]{16}$/'], // No KTP PIC harus tepat 16 digit
+            'picPhoto'     => [
+                $photoRequired ? 'required' : 'nullable',
+                'image',
+                'mimes:jpg,jpeg,png',
+                'max:2048'
+            ],
+            'picKtpPhoto'  => [
+                $ktpRequired ? 'required' : 'nullable',
+                'file',
+                'mimes:jpg,jpeg,png,pdf',
+                'max:5120'
+            ],
+        ], [
+            'picPhone.regex' => 'Nomor HP harus berupa angka dengan panjang 10-13 digit (format nomor HP Indonesia).',
+            'picNumber.regex' => 'No KTP harus berupa angka dengan tepat 16 digit.',
+            'picPhoto.required' => 'Foto PIC wajib diunggah.',
+            'picKtpPhoto.required' => 'Foto/File KTP PIC wajib diunggah.',
         ]);
-
-        $seller = $user->seller;
 
         // Upload foto PIC
         if ($request->hasFile('picPhoto')) {
             $validated['picPhotoPath'] = $request->file('picPhoto')->store('seller/photos', 'public');
+        } elseif ($seller && $seller->picPhotoPath) {
+            // Jika tidak ada file baru tapi ada file lama, pertahankan file lama
+            $validated['picPhotoPath'] = $seller->picPhotoPath;
         }
 
         // Upload file/foto KTP
         if ($request->hasFile('picKtpPhoto')) {
             $validated['picKtpPath'] = $request->file('picKtpPhoto')->store('seller/ktp', 'public');
+        } elseif ($seller && $seller->picKtpPath) {
+            // Jika tidak ada file baru tapi ada file lama, pertahankan file lama
+            $validated['picKtpPath'] = $seller->picKtpPath;
         }
 
         if ($seller) {
             // UPDATE data toko yang sudah ada
+            // Jika status sebelumnya REJECTED, ubah ke PENDING dan increment submission_count
+            if ($seller->status === 'REJECTED') {
+                $validated['status'] = 'PENDING';
+                $validated['submission_count'] = ($seller->submission_count ?? 1) + 1;
+            }
             $seller->update($validated);
             $message = 'Data toko berhasil diperbarui.';
         } else {
             // CREATE data toko baru
             $validated['user_id'] = $user->id;
             $validated['status']  = 'PENDING';
+            $validated['submission_count'] = 1;
             Seller::create($validated);
             $message = 'Data toko berhasil disimpan. Status: PENDING (menunggu verifikasi).';
         }

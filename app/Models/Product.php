@@ -18,6 +18,7 @@ class Product extends Model
         'stock',
         'description',
         'images',
+        'thumbnail_index',
         'status',
     ];
 

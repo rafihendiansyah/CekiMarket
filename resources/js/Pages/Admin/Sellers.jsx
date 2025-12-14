@@ -1,4 +1,5 @@
 import { Head, Link, router, usePage } from "@inertiajs/react";
+import Pagination from "@/Components/Pagination";
 
 export default function SellersAdminPage({ sellers }) {
     const { flash } = usePage().props;
@@ -26,7 +27,8 @@ export default function SellersAdminPage({ sellers }) {
     };
 
     // Hitung pending sellers
-    const pendingCount = sellers.filter(s => s.status === 'PENDING').length;
+    const sellersData = sellers.data || sellers;
+    const pendingCount = sellersData.filter(s => s.status === 'PENDING').length;
 
     return (
         <>
@@ -34,6 +36,17 @@ export default function SellersAdminPage({ sellers }) {
 
             <div className="min-h-screen bg-gray-50">
                 <div className="max-w-6xl mx-auto py-8 px-4">
+                    {/* Tombol Kembali */}
+                    <Link
+                        href={route("dashboard")}
+                        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition mb-6"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
+                        Kembali ke Beranda
+                    </Link>
+
                     {/* Header */}
                     <div className="mb-8">
                         <div className="flex items-center gap-3 mb-2">
@@ -74,9 +87,9 @@ export default function SellersAdminPage({ sellers }) {
                     )}
 
                     {/* List Pending Sellers - Card Layout */}
-                    {sellers.filter(s => s.status === 'PENDING').length > 0 && (
+                    {sellersData.filter(s => s.status === 'PENDING').length > 0 && (
                         <div className="space-y-4 mb-8">
-                            {sellers.filter(s => s.status === 'PENDING').map((seller) => (
+                            {sellersData.filter(s => s.status === 'PENDING').map((seller) => (
                                 <div key={seller.id} className="bg-white rounded-lg shadow-md border border-gray-200 p-6">
                                     <div className="flex items-start justify-between mb-4">
                                         <div className="flex items-start gap-4">
@@ -175,7 +188,7 @@ export default function SellersAdminPage({ sellers }) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {sellers.length === 0 && (
+                                {sellersData.length === 0 && (
                                     <tr>
                                         <td
                                             colSpan="6"
@@ -186,7 +199,7 @@ export default function SellersAdminPage({ sellers }) {
                                     </tr>
                                 )}
 
-                                {sellers.map((seller) => (
+                                {sellersData.map((seller) => (
                                     <tr
                                         key={seller.id}
                                         className="border-b last:border-b-0"
@@ -272,6 +285,7 @@ export default function SellersAdminPage({ sellers }) {
                                 ))}
                             </tbody>
                         </table>
+                        {sellers.links && <Pagination links={sellers.links} />}
                     </div>
                 </div>
             </div>

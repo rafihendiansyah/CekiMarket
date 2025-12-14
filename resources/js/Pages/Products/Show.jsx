@@ -1,9 +1,11 @@
 import { Head, Link, useForm, usePage } from "@inertiajs/react";
 import { useState } from "react";
+import Pagination from "@/Components/Pagination";
 
 export default function ProductShow({ product, store, reviews }) {
     const { flash } = usePage().props;
     const [showFullDescription, setShowFullDescription] = useState(false);
+    const reviewsData = reviews.data || reviews;
 
     const { data, setData, post, processing, errors, reset } = useForm({
         visitor_name: "",
@@ -406,40 +408,43 @@ export default function ProductShow({ product, store, reviews }) {
                                 Ulasan Pengunjung
                             </h2>
 
-                            {reviews.length === 0 ? (
+                            {reviewsData.length === 0 ? (
                                 <p className="text-xs text-gray-500">
                                     Belum ada komentar. Jadilah yang pertama
                                     memberikan ulasan.
                                 </p>
                             ) : (
-                                <div className="space-y-3 max-h-80 overflow-y-auto">
-                                    {reviews.map((review) => (
-                                        <div
-                                            key={review.id}
-                                            className="border-b pb-2 last:border-b-0 last:pb-0"
-                                        >
-                                            <div className="flex items-center justify-between">
-                                                <div className="text-xs font-semibold text-gray-800">
-                                                    {review.visitor_name}
+                                <>
+                                    <div className="space-y-3 max-h-80 overflow-y-auto">
+                                        {reviewsData.map((review) => (
+                                            <div
+                                                key={review.id}
+                                                className="border-b pb-2 last:border-b-0 last:pb-0"
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <div className="text-xs font-semibold text-gray-800">
+                                                        {review.visitor_name}
+                                                    </div>
+                                                    <div className="text-[10px] text-gray-400">
+                                                        {review.date}
+                                                    </div>
                                                 </div>
-                                                <div className="text-[10px] text-gray-400">
-                                                    {review.date}
+                                                <div className="flex items-center text-xs my-0.5">
+                                                    {renderStars(review.rating)}
+                                                    <span className="ml-1 text-gray-600">
+                                                        {review.rating}/5
+                                                    </span>
                                                 </div>
+                                                {review.comment && (
+                                                    <div className="text-xs text-gray-700 mt-0.5">
+                                                        {review.comment}
+                                                    </div>
+                                                )}
                                             </div>
-                                            <div className="flex items-center text-xs my-0.5">
-                                                {renderStars(review.rating)}
-                                                <span className="ml-1 text-gray-600">
-                                                    {review.rating}/5
-                                                </span>
-                                            </div>
-                                            {review.comment && (
-                                                <div className="text-xs text-gray-700 mt-0.5">
-                                                    {review.comment}
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
+                                        ))}
+                                    </div>
+                                    {reviews.links && <Pagination links={reviews.links} />}
+                                </>
                             )}
                         </div>
                     </div>

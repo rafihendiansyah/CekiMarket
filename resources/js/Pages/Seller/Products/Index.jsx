@@ -1,7 +1,9 @@
 import { Head, Link, usePage, router } from "@inertiajs/react";
+import Pagination from "@/Components/Pagination";
 
 export default function ProductsIndex({ products }) {
     const { flash } = usePage().props;
+    const productsData = products.data || products;
 
     const handleDelete = (id) => {
         if (!confirm("Yakin ingin menghapus produk ini?")) return;
@@ -94,7 +96,7 @@ export default function ProductsIndex({ products }) {
                                 </tr>
                             </thead>
                             <tbody>
-                                {products.length === 0 && (
+                                {productsData.length === 0 && (
                                     <tr>
                                         <td
                                             colSpan="6"
@@ -106,7 +108,7 @@ export default function ProductsIndex({ products }) {
                                     </tr>
                                 )}
 
-                                {products.map((product) => (
+                                {productsData.map((product) => (
                                     <tr
                                         key={product.id}
                                         className="border-b last:border-b-0"
@@ -187,6 +189,7 @@ export default function ProductsIndex({ products }) {
                                 ))}
                             </tbody>
                         </table>
+                        {products.links && <Pagination links={products.links} />}
                     </div>
                 </div>
             </div>

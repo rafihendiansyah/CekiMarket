@@ -3,6 +3,7 @@ import { Link, usePage, router } from "@inertiajs/react";
 import AppLayout from "@/Layouts/AppLayout";
 import FlashModal from "@/Components/FlashModal";
 import PromoCarousel from "@/Components/PromoCarousel";
+import Pagination from "@/Components/Pagination";
 
 // Komponen ProductCard dengan hover effect
 function ProductCard({ product, formatRupiah }) {
@@ -96,6 +97,7 @@ export default function Dashboard({
 }) {
     const { flash } = usePage().props;
     const [showFlash, setShowFlash] = useState(true);
+    const productsData = products.data || products;
     // Parse filters dari URL (bisa array atau string)
     const parseFilter = (filter) => {
         if (!filter) return [];
@@ -534,20 +536,23 @@ export default function Dashboard({
                             Produk Terbaru
                         </h2>
 
-                        {products.length === 0 ? (
+                        {productsData.length === 0 ? (
                             <p className="text-sm text-gray-500">
                                 Belum ada produk yang dipublikasikan.
                             </p>
                         ) : (
-                            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-8 lg:gap-12 xl:gap-16">
-                                {products.map((product) => (
-                                    <ProductCard
-                                        key={product.id}
-                                        product={product}
-                                        formatRupiah={formatRupiah}
-                                    />
-                                ))}
-                            </div>
+                            <>
+                                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-8 lg:gap-12 xl:gap-16">
+                                    {productsData.map((product) => (
+                                        <ProductCard
+                                            key={product.id}
+                                            product={product}
+                                            formatRupiah={formatRupiah}
+                                        />
+                                    ))}
+                                </div>
+                                {products.links && <Pagination links={products.links} />}
+                            </>
                         )}
                     </div>
                 </div>

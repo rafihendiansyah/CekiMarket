@@ -74,8 +74,8 @@ class ProductCatalogController extends Controller
             }
         }
 
-        // Ambil produk setelah semua filter diterapkan
-        $products = $query->latest()->get()->map(function (Product $product) {
+        // Ambil produk setelah semua filter diterapkan dengan pagination
+        $products = $query->latest()->paginate(50)->through(function (Product $product) {
             $images = $product->images ?? [];
             $imageUrls = array_map(function ($img) {
                 return '/storage/' . $img;
@@ -202,11 +202,11 @@ class ProductCatalogController extends Controller
         $avgRating   = round($product->reviews()->avg('rating') ?? 0, 1);
         $reviewCount = $product->reviews()->count();
 
-        // Semua review (komentar)
+        // Semua review (komentar) dengan pagination
         $reviews = $product->reviews()
             ->latest()
-            ->get()
-            ->map(function ($review) {
+            ->paginate(15)
+            ->through(function ($review) {
                 return [
                     'id'           => $review->id,
                     'visitor_name' => $review->visitor_name,

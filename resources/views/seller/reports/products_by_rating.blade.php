@@ -13,9 +13,9 @@
     </style>
 </head>
 <body>
-    <div class="title">(SRS-MartPlace-13) Laporan Daftar Produk Berdasarkan Rating</div>
+    <div class="title">Laporan Daftar Produk Berdasarkan Rating</div>
     <div class="subtitle">
-        Tanggal dibuat: {{ $generatedAt->format('d-m-Y H:i') }} oleh {{ $sellerName }}
+        Tanggal dibuat: {{ $generatedAt->setTimezone('Asia/Jakarta')->format('d-m-Y H:i') }} oleh {{ $sellerName }}
     </div>
 
     <table>

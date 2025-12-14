@@ -27,8 +27,8 @@ class PlatformAdminSellerController extends Controller
         $sellers = Seller::with('user')
             ->orderByRaw("FIELD(status, 'PENDING', 'ACTIVE', 'REJECTED')")
             ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($seller) {
+            ->paginate(50)
+            ->through(function ($seller) {
                 return [
                     'id' => $seller->id,
                     'storeName' => $seller->storeName,

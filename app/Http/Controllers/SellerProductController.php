@@ -47,8 +47,8 @@ class SellerProductController extends Controller
 
         $products = $seller->products()
             ->latest()
-            ->get()
-            ->map(function (Product $product) {
+            ->paginate(50)
+            ->through(function (Product $product) {
                 $firstImage = is_array($product->images) && count($product->images) > 0
                     ? $product->images[0]
                     : null;

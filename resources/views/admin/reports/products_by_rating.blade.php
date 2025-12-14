@@ -22,7 +22,7 @@
 <body>
 
 <h2>Laporan Daftar Produk Berdasarkan Rating</h2>
-<p class="meta">Tanggal dibuat: {{ $generatedAt }} oleh {{ $adminName }}</p>
+<p class="meta">Tanggal dibuat: {{ $generatedAt->setTimezone('Asia/Jakarta')->format('d-m-Y H:i') }} oleh {{ $adminName }}</p>
 
 <table>
     <thead>

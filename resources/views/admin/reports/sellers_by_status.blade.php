@@ -15,10 +15,10 @@
     </style>
 </head>
 <body>
-    <h1>(SRS-MartPlace-09)</h1>
+    <h1></h1>
     <h1>Laporan Daftar Akun Penjual Berdasarkan Status</h1>
     <p class="meta">
-        Tanggal dibuat: {{ $generatedAt->format('d-m-Y H:i') }}
+        Tanggal dibuat: {{ $generatedAt->setTimezone('Asia/Jakarta')->format('d-m-Y H:i') }}
         oleh <strong>{{ $adminName }}</strong>
     </p>
 

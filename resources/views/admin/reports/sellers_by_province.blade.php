@@ -13,7 +13,7 @@
 <body>
 
 <h3>Laporan Daftar Toko Berdasarkan Lokasi Provinsi</h3>
-<p>Tanggal dibuat: {{ $generatedAt->format('d-m-Y') }} oleh {{ $adminName }}</p>
+<p>Tanggal dibuat: {{ $generatedAt->setTimezone('Asia/Jakarta')->format('d-m-Y H:i') }} oleh {{ $adminName }}</p>
 
 <table>
     <thead>
